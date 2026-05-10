@@ -1,0 +1,10 @@
+@startuml 03-task-lifecycle
+title Single Task Lifecycle (data-status transitions)
+
+[*] --> blocked
+blocked --> ready : all deps done
+ready --> in_progress : agent claims\n(set owner)
+in_progress --> done : deliverable met\n(clear owner)
+in_progress --> in_progress : blocker noted\n(append data-note)
+done --> [*]
+@enduml

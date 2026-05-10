@@ -2,36 +2,50 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>App Delivery Workflow</title>
+    <title>App Delivery Workflow (Agent-Only)</title>
   </head>
   <body>
     <header>
       <h1>App Delivery Workflow</h1>
-      <p><strong>Mission:</strong> Drive an idea to a deployed app using a fixed, evaluable, parallelizable workflow.</p>
-      <p><strong>Loop command:</strong> /loop 1m ./docs/workflow.html ./docs/idea.md</p>
+      <p><strong>Audience:</strong> Claude agent only. This document is the single source of truth for what to do next. Do not rewrite it for human readability.</p>
+      <p><strong>Mission:</strong> Drive <code>./docs/idea.md</code> to a deployed app using this fixed, evaluable, parallelizable workflow.</p>
+      <p><strong>Loop command:</strong> <code>/loop 1m ./workflow.html ./docs/idea.md</code></p>
     </header>
 
-    <section id="legend">
-      <h2>Legend</h2>
-      <ul>
-        <li><code>data-status</code>: <code>ready</code>, <code>blocked</code>, <code>in-progress</code>, <code>done</code>.</li>
-        <li><code>data-parallel-group</code>: tasks sharing a group can run together when their dependencies are met.</li>
-        <li><code>data-depends-on</code>: comma-separated task IDs that must be <code>done</code> before this task starts.</li>
-        <li><code>data-evaluation-passes</code>: required number of evaluation iterations (default 1).</li>
-      </ul>
+    <section id="agent-protocol">
+      <h2>Agent Protocol (run this every loop iteration)</h2>
+      <ol>
+        <li><strong>Read</strong> this file and parse every <code>&lt;article data-task-id="..."&gt;</code> element.</li>
+        <li><strong>Resolve statuses:</strong> for any task whose <code>data-status="blocked"</code>, recheck dependencies. If every ID in <code>data-depends-on</code> has <code>data-status="done"</code> (or the list is empty), update that task's <code>data-status</code> to <code>ready</code>. If <code>data-depends-on</code> is empty, the task is always eligible.</li>
+        <li><strong>Pick the next task</strong> using this priority order:
+          <ol type="a">
+            <li>Any task already <code>data-status="in-progress"</code> with <code>data-owner</code> equal to this agent — resume it.</li>
+            <li>Otherwise, the first task in document order with <code>data-status="ready"</code> and <code>data-owner=""</code>.</li>
+            <li>If no ready task exists and any task is still <code>blocked</code> or <code>in-progress</code> by another owner, exit this iteration (wait for the next loop tick).</li>
+            <li>If every task has <code>data-status="done"</code>, the workflow is complete — write <code>WORKFLOW COMPLETE</code> and stop the loop.</li>
+          </ol>
+        </li>
+        <li><strong>Claim it:</strong> set <code>data-status="in-progress"</code> and <code>data-owner="claude"</code> on the chosen article, then save the file before doing any other work.</li>
+        <li><strong>Execute the task</strong> per its <code>Goal</code>, <code>Inputs</code>, and <code>Deliverable</code>. Use the skill named in <code>data-skill</code> if one exists; otherwise proceed without a skill.</li>
+        <li><strong>Evaluation tasks</strong> (<code>data-evaluation-passes &gt; 0</code>): run the evaluation that many times, appending findings to <code>./docs/evaluations/&lt;task-id&gt;.md</code> before marking done. Implementation tasks use ATDD: write the acceptance test first, then make it pass.</li>
+        <li><strong>On completion</strong>, set <code>data-status="done"</code> on the article, clear <code>data-owner</code>, and re-run step 2 so newly unblocked tasks flip to <code>ready</code>. Save the file.</li>
+        <li><strong>If blocked mid-task</strong>, leave <code>data-status="in-progress"</code>, append a note to a sibling <code>&lt;p data-note="blocker"&gt;</code> inside the article describing what is needed, and exit the iteration.</li>
+      </ol>
+      <p><strong>Concurrency:</strong> tasks sharing a <code>data-parallel-group</code> may proceed independently once dependencies are met. A single agent still works one task per loop iteration; parallelism is achieved across loop ticks or across spawned subagents.</p>
+      <p><strong>Never</strong> delete tasks, reorder articles, modify <code>data-task-id</code>, or change human-readable wording outside the <code>data-*</code> attributes and the <code>data-note</code> elements you append.</p>
     </section>
 
-    <section id="operating-rules">
-      <h2>Operating Rules</h2>
-      <ol>
-        <li>Claim a ready, unowned task before making changes.</li>
-        <li>Do not start blocked work.</li>
-        <li>Backend MVP + evaluation runs in parallel with Frontend MVP + evaluation.</li>
-        <li>Backend Implementation runs in parallel with Frontend Implementation once their plans are approved.</li>
-        <li>Each evaluation task records pass count and findings before marking <code>done</code>.</li>
-        <li>Implementation tasks use ATDD: write the acceptance test first, then make it pass.</li>
-        <li>After completing a task, update statuses for newly unblocked tasks.</li>
-      </ol>
+    <section id="legend">
+      <h2>Attribute Legend</h2>
+      <ul>
+        <li><code>data-task-id</code>: stable identifier referenced by <code>data-depends-on</code>.</li>
+        <li><code>data-status</code>: <code>ready</code> | <code>blocked</code> | <code>in-progress</code> | <code>done</code>.</li>
+        <li><code>data-owner</code>: agent name currently working the task; empty when unclaimed.</li>
+        <li><code>data-parallel-group</code>: tasks sharing a group can run together when their dependencies are met.</li>
+        <li><code>data-depends-on</code>: comma-separated task IDs that must be <code>done</code> before this task starts.</li>
+        <li><code>data-skill</code>: the Claude skill to invoke for this task (or empty for none).</li>
+        <li><code>data-evaluation-passes</code>: required number of evaluation iterations (0 = not an evaluation task).</li>
+      </ul>
     </section>
 
     <section id="task-board">

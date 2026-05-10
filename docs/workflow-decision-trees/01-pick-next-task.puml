@@ -1,0 +1,35 @@
+@startuml 01-pick-next-task
+title Iteration N: Pick Next Task
+
+start
+:Read workflow.html;
+:Parse all <article data-task-id>;
+:For each blocked task,
+recheck data-depends-on;
+if (any task already
+in-progress with
+owner = me?) then (yes)
+  :Resume that task;
+  stop
+else (no)
+endif
+if (any task with
+status=ready
+and owner empty?) then (yes)
+  :Pick first in document order;
+  :Set status=in-progress
+  owner=claude
+  Save file;
+  stop
+else (no)
+endif
+if (every task done?) then (yes)
+  :Emit WORKFLOW COMPLETE
+  Stop loop;
+  stop
+else (no)
+  :Exit iteration
+  Wait for next tick;
+  stop
+endif
+@enduml

@@ -1,0 +1,63 @@
+@startuml 02-parallelism
+title Parallelism Map (only edges that gate work)
+
+skinparam shadowing false
+
+state "D1\nmocks" as D1
+state "D2\nmocks eval" as D2
+state "R1\nrequirements" as R1
+state "R2\nrequirements eval" as R2
+
+state "MB1\nbackend MVP" as MB1
+state "MB2\nbackend MVP eval" as MB2
+state "MF1\nfrontend MVP" as MF1
+state "MF2\nfrontend MVP eval" as MF2
+
+state "BP1\nbackend plan" as BP1
+state "BP2\nbackend plan eval" as BP2
+state "BT1\nbackend tasks" as BT1
+state "BT2\nbackend tasks eval" as BT2
+state "BI1\nbackend impl (ATDD)" as BI1
+
+state "FP1\nfrontend plan" as FP1
+state "FP2\nfrontend plan eval" as FP2
+state "FT1\nfrontend tasks" as FT1
+state "FT2\nfrontend tasks eval" as FT2
+state "FI1\nfrontend impl (ATDD POM)" as FI1
+
+state "DP1\nAzure deploy" as DP1
+state "TP1\ntest plan" as TP1
+state "TP2\nlocal runtime" as TP2
+state "TP3\n5 test passes" as TP3
+
+[*] --> D1
+D1 --> D2
+D2 --> R1
+R1 --> R2
+
+R2 --> MB1
+R2 --> MF1
+
+MB1 --> MB2
+MF1 --> MF2
+
+MB2 --> BP1
+BP1 --> BP2
+BP2 --> BT1
+BT1 --> BT2
+BT2 --> BI1
+
+MF2 --> FP1
+FP1 --> FP2
+FP2 --> FT1
+FT1 --> FT2
+FT2 --> FI1
+
+BI1 --> DP1
+FI1 --> DP1
+
+DP1 --> TP1
+TP1 --> TP2
+TP2 --> TP3
+TP3 --> [*]
+@enduml
