@@ -210,7 +210,7 @@ Below is a sample HTML document showing the intended pattern.
         data-parallel-group="design"
         data-depends-on="D1"
         data-skill="evaluation"
-        data-evaluation-count="5"
+        data-evaluation-count="0"
       >
         <h3>D2 - Evaluate HTML mocks for 5 passes</h3>
         <p><strong>Goal:</strong> Review and improve the initial mock set over five iterations.</p>
@@ -246,7 +246,7 @@ Below is a sample HTML document showing the intended pattern.
         data-parallel-group="requirements"
         data-depends-on="R1"
         data-skill="evaluation"
-        data-evaluation-count="5"
+        data-evaluation-count="0"
       >
         <h3>R2 - Evaluate requirements for 5 passes</h3>
         <p><strong>Goal:</strong> Review and improve requirements over five iterations.</p>
