@@ -160,12 +160,7 @@
 
       <h3>Authentication &amp; User Management</h3>
       <ul>
-        <li>Two supported sign-in flows, configurable per environment, both producing an equivalent authenticated session:
-          <ul>
-            <li><strong>PKCE-based OAuth 2.0 / OIDC authorization code flow</strong> against an external identity provider.</li>
-            <li><strong>Local username + password</strong> sign-in: backend validates credentials against the application database and issues a signed JWT access token (and a refresh token where appropriate).</li>
-          </ul>
-        </li>
+        <li><strong>OAuth 2.0 sign-in with local users:</strong> backend stores users in the application database, validates username + password credentials, and issues a signed JWT access token (and a refresh token where appropriate). The frontend consumes the JWT and attaches it to API requests as a bearer token. PKCE and external identity providers are explicitly out of scope for this workflow.</li>
         <li>Passwords stored only as salted hashes from a modern password-hashing function (Argon2id, PBKDF2 with adequate iterations, or bcrypt with adequate cost). Never store or log plaintext passwords, code verifiers, or tokens.</li>
         <li>JWTs validated on every request: issuer, audience, signature, expiration. Invalid/expired tokens → HTTP 401.</li>
         <li>Repeated failed sign-ins are rate-limited, locked out, or otherwise throttled, with a security audit log entry on each event.</li>
@@ -608,7 +603,7 @@ class TestRateLimiting:
         <h3>BP1 - Plan backend implementation</h3>
         <p><strong>Goal:</strong> Plan the full backend implementation grounded in approved requirements and the MB1 MVP patterns. The plan MUST be expressed in terms of the Backend, Validation, Authentication, and General sections of <a href="#implementation-guidance">Implementation Guidance</a> — every module, command, query, validator, controller, entity, migration, and auth concern named in the plan must map directly to those rules.</p>
         <p><strong>Inputs:</strong> approved requirements, accepted backend MVP</p>
-        <p><strong>Deliverable:</strong> implementation plan under <code>./docs/plans/backend.md</code> covering: module / project layout (Api / Application / Domain / Infrastructure), entities and DbContext shape, command + query inventory grouped by feature, validator inventory, controller surface, auth flows (PKCE OIDC + local username/password, RBAC roles), migration sequencing, deferred-integration list (with the no-op service plan for each).</p>
+        <p><strong>Deliverable:</strong> implementation plan under <code>./docs/plans/backend.md</code> covering: module / project layout (Api / Application / Domain / Infrastructure), entities and DbContext shape, command + query inventory grouped by feature, validator inventory, controller surface, auth flow (local username/password with JWT issuance, RBAC roles), migration sequencing, deferred-integration list (with the no-op service plan for each).</p>
         <p><strong>Done when:</strong> every requirement appears in the plan, every plan item maps to a guidance rule, no plan item conflicts with the guidance.</p>
       </article>
 
@@ -626,7 +621,7 @@ class TestRateLimiting:
         <p><strong>Goal:</strong> Verify the BP1 plan covers every requirement and complies with the Backend, Validation, Authentication, and General sections of <a href="#implementation-guidance">Implementation Guidance</a>. Fix any gap or conflict by editing the plan, then re-evaluate. Findings under <code>./docs/evaluations/BP2.md</code>.</p>
         <p><strong>Inputs:</strong> BP1 outputs, approved requirements, accepted backend MVP</p>
         <p><strong>Deliverable:</strong> approved backend plan with zero gaps and zero conflicts.</p>
-        <p><strong>Explicit checks:</strong> Clean Architecture layering planned; CQS via MediatR planned; no repository or unit-of-work in the plan; FluentValidation per command planned; <code>IAppDbContext</code> abstraction planned; auth flows planned (both OIDC PKCE and local) with hashing + JWT validation + RBAC; SQL Server; one-type-per-file convention assumed; deferred integrations explicitly enumerated as no-op logging services. No speculative abstractions in the plan.</p>
+        <p><strong>Explicit checks:</strong> Clean Architecture layering planned; CQS via MediatR planned; no repository or unit-of-work in the plan; FluentValidation per command planned; <code>IAppDbContext</code> abstraction planned; auth flow planned (local username/password) with hashing + JWT issuance + JWT validation + RBAC; SQL Server; one-type-per-file convention assumed; deferred integrations explicitly enumerated as no-op logging services. No speculative abstractions in the plan.</p>
         <p><strong>Done when:</strong> a full evaluation pass produces zero blocking findings.</p>
       </article>
 
@@ -705,7 +700,7 @@ class TestRateLimiting:
         <h3>FP1 - Plan frontend implementation</h3>
         <p><strong>Goal:</strong> Plan the full frontend implementation grounded in approved requirements, accepted mocks, and the MF1 MVP patterns. The plan MUST be expressed in terms of the Frontend, Library Structure, Authentication (frontend side), Testing, and General sections of <a href="#implementation-guidance">Implementation Guidance</a> — every route, component, service, and library boundary named in the plan must map directly to those rules.</p>
         <p><strong>Inputs:</strong> approved requirements, accepted frontend MVP, accepted mocks</p>
-        <p><strong>Deliverable:</strong> implementation plan under <code>./docs/plans/frontend.md</code> covering: workspace layout (apps + libraries with the correct dependency direction), per-feature route list, component inventory split across <code>components</code> vs <code>domain</code>, service inventory in <code>api</code> with each <code>*.service.contract.ts</code> named, design-token list, auth integration (PKCE OIDC + local sign-in flows), Playwright POM test inventory, deferred-integration list.</p>
+        <p><strong>Deliverable:</strong> implementation plan under <code>./docs/plans/frontend.md</code> covering: workspace layout (apps + libraries with the correct dependency direction), per-feature route list, component inventory split across <code>components</code> vs <code>domain</code>, service inventory in <code>api</code> with each <code>*.service.contract.ts</code> named, design-token list, auth integration (local username/password sign-in with JWT bearer attached to API calls), Playwright POM test inventory, deferred-integration list.</p>
         <p><strong>Done when:</strong> every requirement and every mock screen appears in the plan, every plan item maps to a guidance rule, no plan item conflicts with the guidance.</p>
       </article>
 
@@ -723,7 +718,7 @@ class TestRateLimiting:
         <p><strong>Goal:</strong> Verify the FP1 plan covers every requirement and every mock screen and complies with the Frontend, Library Structure, Authentication (frontend side), Testing, and General sections of <a href="#implementation-guidance">Implementation Guidance</a>. Fix-on-find: amend the plan, re-evaluate. Findings under <code>./docs/evaluations/FP2.md</code>.</p>
         <p><strong>Inputs:</strong> FP1 outputs, approved requirements, accepted mocks</p>
         <p><strong>Deliverable:</strong> approved frontend plan with zero gaps and zero conflicts.</p>
-        <p><strong>Explicit checks:</strong> three libraries (<code>api</code>, <code>components</code>, <code>domain</code>) plus app planned with correct dependency direction; every planned service has a <code>*.service.contract.ts</code>; Angular Material 3 components specified; design tokens specified; BEM naming assumed; per-file split assumed; Playwright POM tests planned for important flows; both auth flows planned; mock-to-screen mapping is exhaustive.</p>
+        <p><strong>Explicit checks:</strong> three libraries (<code>api</code>, <code>components</code>, <code>domain</code>) plus app planned with correct dependency direction; every planned service has a <code>*.service.contract.ts</code>; Angular Material 3 components specified; design tokens specified; BEM naming assumed; per-file split assumed; Playwright POM tests planned for important flows; local username/password auth flow planned; mock-to-screen mapping is exhaustive.</p>
         <p><strong>Library placement (CRITICAL — every component / service / model in the plan must name its library, and the plan must be wrong-proof for the implementer):</strong></p>
         <ul>
           <li><strong>Every reusable presentation component</strong> in the plan is assigned to the <code>components</code> library. If the plan places a presentation component anywhere else, it is a finding — fix the plan.</li>
