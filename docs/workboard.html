@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Complex App Delivery Board</title>
+  </head>
+  <body>
+    <header>
+      <h1>Complex App Delivery Board</h1>
+      <p><strong>Mission:</strong> Build a complex app from idea to shipping using looping Claude agents.</p>
+      <p><strong>Loop command:</strong> /loop 1m ./docs/workboard.html ./docs/idea.md</p>
+    </header>
+
+    <section id="context">
+      <h2>Context</h2>
+      <p><strong>Product idea:</strong> A collaborative planning app for small software teams.</p>
+      <p><strong>Primary users:</strong> founders, designers, engineers, QA.</p>
+      <p><strong>Constraints:</strong> clear documentation, incremental delivery, release readiness.</p>
+    </section>
+
+    <section id="operating-rules">
+      <h2>Operating Rules</h2>
+      <ol>
+        <li>Always claim a ready unowned task before making changes.</li>
+        <li>Do not start blocked work.</li>
+        <li>After completing a task, update statuses for newly unblocked tasks.</li>
+        <li>Evaluation tasks must run 5 passes minimum.</li>
+      </ol>
+    </section>
+
+    <section id="task-board">
+      <h2>Task Board</h2>
+
+      <article
+        data-task-id="D1"
+        data-phase="design-seed"
+        data-status="ready"
+        data-owner=""
+        data-parallel-group="design"
+        data-depends-on=""
+        data-skill="frontend designer"
+        data-evaluation-count="0"
+      >
+        <h3>D1 - Build initial HTML mocks</h3>
+        <p><strong>Goal:</strong> Create the first set of HTML mocks for the main product flows.</p>
+        <p><strong>Inputs:</strong> idea.md</p>
+        <p><strong>Deliverable:</strong> HTML mock files checked into the repo.</p>
+        <p><strong>Parallel:</strong> Can run alone. Unlocks design evaluation.</p>
+        <p><strong>Done when:</strong> core screens exist and are reviewable.</p>
+      </article>
+
+      <article
+        data-task-id="D2"
+        data-phase="design-evaluation"
+        data-status="blocked"
+        data-owner=""
+        data-parallel-group="design"
+        data-depends-on="D1"
+        data-skill="evaluation"
+        data-evaluation-count="5"
+      >
+        <h3>D2 - Evaluate HTML mocks for 5 passes</h3>
+        <p><strong>Goal:</strong> Review and improve the initial mock set over five iterations.</p>
+        <p><strong>Inputs:</strong> D1 outputs, idea.md</p>
+        <p><strong>Deliverable:</strong> revised HTML mocks plus recorded pass count.</p>
+        <p><strong>Parallel:</strong> No downstream task starts until complete.</p>
+        <p><strong>Done when:</strong> passes 1 through 5 are complete and final mocks are accepted.</p>
+      </article>
+
+      <article
+        data-task-id="R1"
+        data-phase="requirements"
+        data-status="blocked"
+        data-owner=""
+        data-parallel-group="requirements"
+        data-depends-on="D2"
+        data-skill="requirements"
+        data-evaluation-count="0"
+      >
+        <h3>R1 - Create requirements from idea and approved design</h3>
+        <p><strong>Goal:</strong> Produce product requirements using the idea doc, design outputs, and technical guidance docs.</p>
+        <p><strong>Inputs:</strong> idea.md, approved mocks, technical guidance docs</p>
+        <p><strong>Deliverable:</strong> requirements document in the repo.</p>
+        <p><strong>Parallel:</strong> Can unlock architecture and test-planning tasks later.</p>
+        <p><strong>Done when:</strong> scope, features, constraints, and acceptance criteria are documented.</p>
+      </article>
+
+      <article
+        data-task-id="R2"
+        data-phase="requirements-evaluation"
+        data-status="blocked"
+        data-owner=""
+        data-parallel-group="requirements"
+        data-depends-on="R1"
+        data-skill="evaluation"
+        data-evaluation-count="5"
+      >
+        <h3>R2 - Evaluate requirements for 5 passes</h3>
+        <p><strong>Goal:</strong> Review and improve requirements over five iterations.</p>
+        <p><strong>Inputs:</strong> R1 outputs, idea.md, mocks</p>
+        <p><strong>Deliverable:</strong> approved requirements document.</p>
+        <p><strong>Parallel:</strong> Must finish before implementation planning.</p>
+        <p><strong>Done when:</strong> all five passes are completed and open issues are resolved.</p>
+      </article>
+
+      <article
+        data-task-id="Q1"
+        data-phase="quality"
+        data-status="blocked"
+        data-owner=""
+        data-parallel-group="quality"
+        data-depends-on="R2"
+        data-skill="delivery"
+        data-evaluation-count="0"
+      >
+        <h3>Q1 - Prepare repo for shipping</h3>
+        <p><strong>Goal:</strong> Create README, CI/CD workflow, lint setup, test plan, test execution, and release checklist.</p>
+        <p><strong>Inputs:</strong> approved requirements and implemented features</p>
+        <p><strong>Deliverable:</strong> repo is documented, validated, and ready to ship.</p>
+        <p><strong>Parallel:</strong> Split into sub-tasks where no file ownership conflicts exist.</p>
+        <p><strong>Done when:</strong> docs, CI/CD, linting, tests, and release checks are complete.</p>
+      </article>
+    </section>
+
+    <section id="decision-log">
+      <h2>Decision Log</h2>
+      <ul>
+        <li>Use evaluation gates after major deliverables.</li>
+        <li>Prefer small tasks that a single loop can finish.</li>
+        <li>Keep dependency data current so multiple agents can coordinate safely.</li>
+      </ul>
+    </section>
+  </body>
+</html>
