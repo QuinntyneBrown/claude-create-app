@@ -2,7 +2,7 @@
 title Iteration 100: What the Agent Actually Sees
 
 start
-:Open dotnet-angular-authenticated-full-stack-workflow.html;
+:Open docs/dotnet-angular-authenticated-full-stack-workflow.html;
 :Scan 22 articles;
 note right
   Iteration counter is NOT in the file.

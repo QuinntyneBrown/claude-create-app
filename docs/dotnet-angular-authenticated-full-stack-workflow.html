@@ -9,15 +9,16 @@
       <h1>App Delivery Workflow</h1>
       <p><strong>Audience:</strong> Claude agent only. This document is the single source of truth for what to do next. Do not rewrite it for human readability.</p>
       <p><strong>Mission:</strong> Drive <code>./docs/idea.md</code> to a deployed app using this fixed, evaluable, parallelizable workflow.</p>
-      <p><strong>Loop command:</strong> <code>/loop 1m ./dotnet-angular-authenticated-full-stack-workflow.html ./docs/idea.md</code></p>
+      <p><strong>Canonical location:</strong> <code>./docs/dotnet-angular-authenticated-full-stack-workflow.html</code>. This is the only copy. Every status / owner update the agent makes is to <em>this</em> path. Do not create or maintain a copy outside <code>./docs/</code>.</p>
+      <p><strong>Loop command:</strong> <code>/loop 1m ./docs/dotnet-angular-authenticated-full-stack-workflow.html ./docs/idea.md</code></p>
     </header>
 
     <section id="agent-protocol">
       <h2>Agent Protocol (run this every loop iteration)</h2>
-      <p><strong>Multi-agent coordination:</strong> Two or more agents may be running this workflow on different machines. <code>dotnet-angular-authenticated-full-stack-workflow.html</code> in <code>origin/main</code> is the shared lock table. Every status or owner change MUST be committed and pushed immediately so the other agent sees it on its next iteration. Identify yourself with a stable, unique <code>data-owner</code> value — for example <code>claude@&lt;hostname&gt;</code>. Never use the bare value <code>claude</code> when more than one agent is active.</p>
+      <p><strong>Multi-agent coordination:</strong> Two or more agents may be running this workflow on different machines. <code>./docs/dotnet-angular-authenticated-full-stack-workflow.html</code> in <code>origin/main</code> is the shared lock table. Every status or owner change MUST be committed and pushed immediately so the other agent sees it on its next iteration. Identify yourself with a stable, unique <code>data-owner</code> value — for example <code>claude@&lt;hostname&gt;</code>. Never use the bare value <code>claude</code> when more than one agent is active.</p>
 
       <ol>
-        <li><strong>Sync from remote first.</strong> Run <code>git fetch origin</code> then <code>git pull --rebase origin main</code> in the repo root. Do not read <code>dotnet-angular-authenticated-full-stack-workflow.html</code> until the pull succeeds. If the working tree is dirty (uncommitted edits from a prior aborted iteration), <code>git stash</code> them, pull, then <code>git stash pop</code> and resolve before continuing.</li>
+        <li><strong>Sync from remote first.</strong> Run <code>git fetch origin</code> then <code>git pull --rebase origin main</code> in the repo root. Do not read <code>./docs/dotnet-angular-authenticated-full-stack-workflow.html</code> until the pull succeeds. If the working tree is dirty (uncommitted edits from a prior aborted iteration), <code>git stash</code> them, pull, then <code>git stash pop</code> and resolve before continuing.</li>
         <li><strong>Read</strong> this file and parse every <code>&lt;article data-task-id="..."&gt;</code> element.</li>
         <li><strong>Resolve statuses:</strong> for any task whose <code>data-status="blocked"</code>, recheck dependencies. If every ID in <code>data-depends-on</code> has <code>data-status="done"</code> (or the list is empty), update that task's <code>data-status</code> to <code>ready</code>. If you flipped any statuses, save, commit (<code>chore(workflow): unblock &lt;ids&gt;</code>), and push before continuing.</li>
         <li><strong>Pick the next task</strong> using this priority order:
@@ -31,7 +32,7 @@
         <li><strong>Claim it atomically</strong> (this is the critical section for two-agent safety):
           <ol type="a">
             <li>Set <code>data-status="in-progress"</code> and <code>data-owner="&lt;your-id&gt;"</code> on the chosen article. Save.</li>
-            <li><code>git add dotnet-angular-authenticated-full-stack-workflow.html</code></li>
+            <li><code>git add docs/dotnet-angular-authenticated-full-stack-workflow.html</code></li>
             <li><code>git commit -m "claim(workflow): &lt;task-id&gt; by &lt;your-id&gt;"</code></li>
             <li><code>git push origin main</code></li>
             <li>If the push is rejected (non-fast-forward), the other agent claimed something concurrently. <code>git reset --hard origin/main</code> after fetching, then restart this iteration from step 1. Do <strong>not</strong> retry the same task without re-reading.</li>
@@ -44,7 +45,7 @@
           <ol type="a">
             <li>Set <code>data-status="done"</code> on the article and clear <code>data-owner</code>.</li>
             <li>Re-run step 3 so newly unblocked tasks flip to <code>ready</code> in the same edit.</li>
-            <li>Save, then <code>git add dotnet-angular-authenticated-full-stack-workflow.html</code>, <code>git commit -m "done(workflow): &lt;task-id&gt;"</code>, <code>git push origin main</code>.</li>
+            <li>Save, then <code>git add docs/dotnet-angular-authenticated-full-stack-workflow.html</code>, <code>git commit -m "done(workflow): &lt;task-id&gt;"</code>, <code>git push origin main</code>.</li>
             <li>If push is rejected: <code>git pull --rebase origin main</code>, reapply your status change on top (your <code>done</code> still wins because you held the lock), then push again.</li>
           </ol>
         </li>
@@ -56,7 +57,7 @@
       <ul>
         <li>Tasks sharing a <code>data-parallel-group</code> may proceed independently once dependencies are met. With two agents, the second one picks the next ready task in document order — usually the parallel sibling.</li>
         <li>Only the owner of an <code>in-progress</code> task may modify its <code>data-status</code> or <code>data-owner</code>. Never reassign someone else's task.</li>
-        <li>If you find a task <code>in-progress</code> by another owner that has had no commits in 30 minutes (check <code>git log -1 --format=%cI -- dotnet-angular-authenticated-full-stack-workflow.html</code>), append a <code>&lt;p data-note="stale-owner"&gt;</code> note but do not claim it. A human will resolve.</li>
+        <li>If you find a task <code>in-progress</code> by another owner that has had no commits in 30 minutes (check <code>git log -1 --format=%cI -- docs/dotnet-angular-authenticated-full-stack-workflow.html</code>), append a <code>&lt;p data-note="stale-owner"&gt;</code> note but do not claim it. A human will resolve.</li>
         <li>Push-rejection on a workflow-file commit is the expected concurrency signal — handle it, do not panic. Push-rejection on a deliverable commit is a normal merge — pull-rebase and re-push.</li>
       </ul>
 
@@ -222,6 +223,14 @@
         <li><strong>No temp code or stubs.</strong> Grep for <code>TODO</code>, <code>FIXME</code>, <code>XXX</code>, <code>HACK</code>, <code>NotImplementedException</code>, <code>throw new Error("not implemented")</code>, empty method bodies that should do work, returned hard-coded sentinel values, commented-out blocks. Each hit is a finding unless it is an explicitly-deferred optional integration documented in the deliverable notes (e.g., transactional email — replaced by a logging no-op service named accordingly).</li>
         <li><strong>One type per file.</strong> No combined-type C# files; no single-file Angular components.</li>
         <li><strong>SOLID + CQS shape.</strong> Backend: handlers depend on <code>IAppDbContext</code>, FluentValidation present for every command, no repository/unit-of-work classes. Frontend: services are interface-driven via <code>*.service.contract.ts</code>, libraries respect the dependency direction (components → nothing; domain → api; app → all).</li>
+        <li><strong>Frontend library placement (CRITICAL — every frontend evaluation must enforce this).</strong> Walk every Angular file and verify it lives in the correct library:
+          <ul>
+            <li><strong>Every reusable presentation component</strong> (buttons, headers, inputs, cards, dialogs, layout primitives, anything that does not call the backend) lives in the <code>components</code> library. If a presentation component is found anywhere else (in <code>domain</code>, in <code>app</code>, in <code>api</code>), it is a finding. Move it to <code>components</code>.</li>
+            <li><strong>Every model and every service used to communicate with the backend</strong> (HTTP services, DTO interfaces, response/request types, the matching <code>*.service.contract.ts</code> + injection token) lives in the <code>api</code> library. If a backend-talking service or its model is found in <code>components</code>, <code>domain</code>, or <code>app</code>, it is a finding. Move it to <code>api</code>.</li>
+            <li><strong>Every component that needs the api layer</strong> (any component that injects a service exposed by <code>api</code>, directly or transitively) lives in the <code>domain</code> library. If such a component is found in <code>components</code> or <code>app</code>, it is a finding. Move it to <code>domain</code>.</li>
+            <li>Verification: grep imports. <code>components</code> must import nothing from <code>api</code> or <code>domain</code>. <code>domain</code> may import from <code>api</code> and <code>components</code>, never from <code>app</code>. <code>app</code> may import from all three. Any violation is blocking.</li>
+          </ul>
+        </li>
         <li><strong>ATDD evidence.</strong> Acceptance test exists and was written before the implementation (check git history if needed). It currently passes against the actual implementation.</li>
         <li><strong>Mobile-first + responsive.</strong> Frontend changes look correct at 360 / 768 / 1440 widths.</li>
         <li><strong>Build and run clean.</strong> <code>dotnet build</code> and <code>ng build</code> (or equivalent) produce zero errors and zero new warnings. App starts from the documented run command.</li>
@@ -575,7 +584,14 @@ class TestRateLimiting:
         <p><strong>Inputs:</strong> MF1 outputs, approved requirements, accepted mocks</p>
         <p><strong>Deliverable:</strong> accepted MVP and pattern reference; evaluation findings recorded under <code>./docs/evaluations/MF2.md</code> with a section per pass.</p>
         <p><strong>Explicit checks:</strong> three libraries (<code>api</code>, <code>components</code>, <code>domain</code>) plus app with the correct dependency direction (components depends on nothing, domain depends on api, app depends on all three); every service has a <code>*.service.contract.ts</code> with interface + injection token; Angular Material 3 components used; design tokens defined; BEM class naming; one-type-per-file with separate <code>.html</code>/<code>.scss</code>/<code>.ts</code>; Playwright POM acceptance test exists, was authored before the implementation, currently passes; visual appearance matches the accepted mocks at 360 / 768 / 1440; no <code>TODO</code>/<code>console.log</code>-debug/empty methods; radically simple.</p>
-        <p><strong>Done when:</strong> a full evaluation pass produces zero blocking findings.</p>
+        <p><strong>Library placement (CRITICAL — must pass before MF2 can mark done):</strong></p>
+        <ul>
+          <li>The single sample reusable component lives in the <code>components</code> library. It must not import from <code>api</code>, <code>domain</code>, or <code>app</code>. If it talks to the backend, it is in the wrong library — move it.</li>
+          <li>The single sample backend-facing service and its model live in the <code>api</code> library, with the matching <code>*.service.contract.ts</code> + injection token. They must not appear in <code>components</code>, <code>domain</code>, or <code>app</code>.</li>
+          <li>The single sample component that consumes the api service lives in the <code>domain</code> library, depends on the api service via its contract (not the concrete class), and may compose components from the <code>components</code> library. It must not appear in <code>app</code>.</li>
+          <li>Verify by grepping every component file's imports. Any import that crosses a forbidden boundary is a blocking finding — fix the placement, commit, push, re-evaluate.</li>
+        </ul>
+        <p><strong>Done when:</strong> a full evaluation pass produces zero blocking findings, including zero library-placement violations.</p>
       </article>
 
       <!-- ========== Backend Implementation ========== -->
@@ -708,7 +724,14 @@ class TestRateLimiting:
         <p><strong>Inputs:</strong> FP1 outputs, approved requirements, accepted mocks</p>
         <p><strong>Deliverable:</strong> approved frontend plan with zero gaps and zero conflicts.</p>
         <p><strong>Explicit checks:</strong> three libraries (<code>api</code>, <code>components</code>, <code>domain</code>) plus app planned with correct dependency direction; every planned service has a <code>*.service.contract.ts</code>; Angular Material 3 components specified; design tokens specified; BEM naming assumed; per-file split assumed; Playwright POM tests planned for important flows; both auth flows planned; mock-to-screen mapping is exhaustive.</p>
-        <p><strong>Done when:</strong> a full evaluation pass produces zero blocking findings.</p>
+        <p><strong>Library placement (CRITICAL — every component / service / model in the plan must name its library, and the plan must be wrong-proof for the implementer):</strong></p>
+        <ul>
+          <li><strong>Every reusable presentation component</strong> in the plan is assigned to the <code>components</code> library. If the plan places a presentation component anywhere else, it is a finding — fix the plan.</li>
+          <li><strong>Every model and every service used to communicate with the backend</strong> is assigned to the <code>api</code> library, each paired with its <code>*.service.contract.ts</code>. If the plan places a backend-facing service in <code>components</code>, <code>domain</code>, or <code>app</code>, it is a finding — fix the plan.</li>
+          <li><strong>Every component that needs the api layer</strong> is assigned to the <code>domain</code> library. If the plan places an api-consuming component in <code>components</code> or <code>app</code>, it is a finding — fix the plan.</li>
+          <li>The plan must call out the import direction: <code>components</code> imports nothing from <code>api</code> or <code>domain</code>; <code>domain</code> may import <code>api</code> and <code>components</code>; <code>app</code> may import all three. Any inverse direction in the plan is blocking.</li>
+        </ul>
+        <p><strong>Done when:</strong> a full evaluation pass produces zero blocking findings, including zero library-placement violations in the plan.</p>
       </article>
 
       <article
@@ -743,7 +766,14 @@ class TestRateLimiting:
         <p><strong>Inputs:</strong> FT1 outputs, approved frontend plan, accepted mocks</p>
         <p><strong>Deliverable:</strong> approved frontend task list.</p>
         <p><strong>Explicit checks:</strong> every task is a true vertical UI slice; no "scaffolding only" tasks; library boundaries are respected (a task in <code>components</code> never imports from <code>api</code>); every task names its Playwright POM acceptance test; every task names which guidance rules it must satisfy; sizing is small enough that one task = a few loop iterations.</p>
-        <p><strong>Done when:</strong> a full evaluation pass produces zero blocking findings.</p>
+        <p><strong>Library placement per task (CRITICAL — each task entry must name the target library for every artifact it produces):</strong></p>
+        <ul>
+          <li>For every reusable presentation component the task introduces, the entry says it lives in <code>components</code>. If a task creates a presentation component in <code>domain</code> or <code>app</code>, it is a finding — fix the task.</li>
+          <li>For every model and every backend-facing service the task introduces, the entry says it lives in <code>api</code> with its <code>*.service.contract.ts</code>. If a task creates a backend-facing service outside <code>api</code>, it is a finding — fix the task.</li>
+          <li>For every component the task introduces that consumes an api service, the entry says it lives in <code>domain</code>. If a task creates an api-consuming component in <code>components</code> or <code>app</code>, it is a finding — fix the task.</li>
+          <li>No task may produce a single artifact without naming its library. Unnamed-library artifacts are blocking findings.</li>
+        </ul>
+        <p><strong>Done when:</strong> a full evaluation pass produces zero blocking findings, including zero library-placement violations across the task list.</p>
       </article>
 
       <article
@@ -763,13 +793,22 @@ class TestRateLimiting:
         <p><strong>Per-slice loop:</strong>
           <ol>
             <li>Write Playwright POM acceptance test for the slice. Commit + push.</li>
-            <li>Implement until the test passes, following every applicable guidance rule. Commit + push.</li>
-            <li>Run the Implementation Evaluation Rubric scoped to frontend. If any finding, fix in the implementation, commit + push, re-evaluate. Repeat until a clean pass.</li>
+            <li>Implement until the test passes, following every applicable guidance rule, placing every artifact in its correct library (see "Library placement" below). Commit + push.</li>
+            <li>Run the Implementation Evaluation Rubric scoped to frontend. If any finding (including a library-placement finding), fix in the implementation, commit + push, re-evaluate. Repeat until a clean pass.</li>
             <li>Verify the slice visually matches the mock at 360 / 768 / 1440 widths.</li>
             <li>Mark the slice done in <code>./docs/plans/frontend-tasks.md</code>. Commit + push.</li>
           </ol>
         </p>
-        <p><strong>No stubs.</strong> A slice is not done if it contains <code>TODO</code>, debug <code>console.log</code>, empty methods, hard-coded fake responses, single-file components, inline templates, or any deviation from BEM / per-file / library-direction rules. Only explicitly-deferred optional integrations may be replaced by a logging no-op service named accordingly and noted in the evaluation file.</p>
+
+        <p><strong>Library placement (CRITICAL — every per-slice evaluation must enforce this; placement violations are the most common implementation regression and are blocking):</strong></p>
+        <ul>
+          <li><strong>Every reusable presentation component</strong> the slice introduces lives in the <code>components</code> library. A presentation component placed in <code>domain</code>, <code>app</code>, or <code>api</code> is a blocking finding — move the file, fix imports, commit, push, re-evaluate.</li>
+          <li><strong>Every model and every service used to communicate with the backend</strong> the slice introduces lives in the <code>api</code> library, paired with its <code>*.service.contract.ts</code> + injection token. A backend-facing service placed in <code>components</code>, <code>domain</code>, or <code>app</code> is a blocking finding — move it.</li>
+          <li><strong>Every component the slice introduces that needs the api layer</strong> (injects an api service, directly or transitively) lives in the <code>domain</code> library. An api-consuming component placed in <code>components</code> or <code>app</code> is a blocking finding — move it.</li>
+          <li>Verify by grepping every new file's imports. <code>components</code> imports nothing from <code>api</code> or <code>domain</code>. <code>domain</code> may import from <code>api</code> and <code>components</code>, never from <code>app</code>. <code>app</code> may import all three. Any violation is blocking and must be fixed before the slice can be marked done.</li>
+        </ul>
+
+        <p><strong>No stubs.</strong> A slice is not done if it contains <code>TODO</code>, debug <code>console.log</code>, empty methods, hard-coded fake responses, single-file components, inline templates, library-placement violations, or any deviation from BEM / per-file / library-direction rules. Only explicitly-deferred optional integrations may be replaced by a logging no-op service named accordingly (still in the correct library) and noted in the evaluation file.</p>
         <p><strong>Done when:</strong> every frontend task is implemented, has a passing Playwright POM test, has a clean evaluation pass on the rubric, visually matches its mock, and is marked done in the task list.</p>
       </article>
 

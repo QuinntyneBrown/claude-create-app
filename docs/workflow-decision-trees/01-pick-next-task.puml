@@ -2,7 +2,7 @@
 title Iteration N: Pick Next Task
 
 start
-:Read dotnet-angular-authenticated-full-stack-workflow.html;
+:Read docs/dotnet-angular-authenticated-full-stack-workflow.html;
 :Parse all <article data-task-id>;
 :For each blocked task,
 recheck data-depends-on;

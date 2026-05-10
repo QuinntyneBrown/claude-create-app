@@ -1,6 +1,6 @@
 # Workflow Decision Trees
 
-Companion analysis for `C:\projects\claude-create-app\dotnet-angular-authenticated-full-stack-workflow.html`.
+Companion analysis for `C:\projects\claude-create-app\docs\dotnet-angular-authenticated-full-stack-workflow.html`.
 
 ## Is the workflow file efficient for an agent?
 
