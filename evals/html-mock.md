@@ -1,0 +1,4 @@
+- All pages Adheres Google Material
+- design is radically simple while implementing the idea and providing a great user expereince
+- design app is responsive and can be viewed on mobile, desktop and tablet screen sizes 
+- evaluate against any applicable guidance in C:\projects\claude-create-app\docs\technology-guidance-and-practices.md

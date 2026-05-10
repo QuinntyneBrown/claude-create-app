@@ -1,8 +1,8 @@
 # Workflow Decision Trees
 
-Companion analysis for `C:\projects\claude-create-app\workflow.html`.
+Companion analysis for `C:\projects\claude-create-app\dotnet-angular-authenticated-full-stack-workflow.html`.
 
-## Is `workflow.html` efficient for an agent?
+## Is the workflow file efficient for an agent?
 
 **Short answer:** the *parsing* is efficient, the *state model* is not. It works fine for iterations 1–20. By iteration 100 the agent is re-deriving progress from sources outside the file (git log, evaluation notes, bug logs) because three tasks — `BI1`, `FI1`, `TP3` — are loops that the file represents as a single article.
 
